@@ -1,0 +1,35 @@
+[[bin]]
+name = "vrr"
+path = "src/bin/main.rs"
+
+[package]
+name = "vrr"
+version = "0.1.0"
+edition = "2021"
+default-run = "vrr"
+license = "Apache 2.0"
+
+[dependencies]
+anyhow = "1.0"
+number_prefix = "0.4.0"
+bytemuck = { version = "1.12", features = [ "derive" ] }
+turbojpeg = "0.5.4"
+log = "0.4"
+env_logger = "0.10"
+logging_timer = "1.1.0"
+pollster = "0.3"
+wgpu = "0.16"
+winit = "0.27"
+rexiv2 = "0.10.0"
+nalgebra = "0.32.3"
+rayon = "1.8.0"
+clap = { version = "4.4.6", features = ["derive"] }
+glyphon = "0.3.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+dirs = "5.0.1"
+
+[dependencies.image]
+version = "0.24"
+default-features = false
+features = ["png", "jpeg"]
