@@ -1,6 +1,6 @@
 use crate::texture::{ImageResolution, SizedImage};
 use anyhow::*;
-use log::debug;
+use log::{debug, error};
 use std::collections::HashMap;
 use std::num::NonZeroUsize;
 use std::path::PathBuf;
@@ -42,8 +42,8 @@ enum LoadState {
 
 pub struct ImageLoader {
     pub images: Vec<ImageRef>,
-    pub sender: Sender<SizedImage>,
-    pub receiver: Receiver<SizedImage>,
+    pub sender: Sender<Result<SizedImage>>,
+    pub receiver: Receiver<Result<SizedImage>>,
     pub preload: usize,
     index: usize,
     cache: Arc<Mutex<HashMap<ImageRequest, LoadState>>>,
@@ -182,7 +182,7 @@ impl ImageLoader {
             if cache.lock().unwrap().get(&req).is_none() {
                 return;
             }
-            let sized_image = SizedImage::from_request(req.clone()).unwrap();
+            let sized_image = SizedImage::from_request(req.clone());
             if let Err(SendError(_)) = sender.send(sized_image) {
                 debug!("send error: {:?}", req);
                 return;
@@ -230,8 +230,11 @@ impl ImageLoader {
 
     pub fn images(&mut self) -> Vec<SizedImage> {
         let mut images = Vec::new();
-        while let Result::Ok(image) = self.receiver.try_recv().map_err(|e| anyhow!(e)) {
-            images.push(image);
+        while let Result::Ok(res) = self.receiver.try_recv().map_err(|e| anyhow!(e)) {
+            match res {
+                Result::Ok(image) => images.push(image),
+                Err(e) => error!("Error loading image: {}", e),
+            }
         }
         images
     }
